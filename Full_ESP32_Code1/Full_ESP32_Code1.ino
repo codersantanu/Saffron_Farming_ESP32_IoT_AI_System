@@ -29,30 +29,36 @@ const int moisturePin = 34;
 const int dryValue = 0;
 const int wetValue = 4095;
 
-// ====== *** Pwm value to control the MOSFET That come from app
+// ====== *** Pwm value to control the MOSFET That come from app ****========
 int pwmValue = 120; // Example value (can come from app)
+
+// ===== *** Relay Pin Configuration *** =====
+int relay1 = 23;
+int relay2 = 19;
+int relay3 = 18;
+int relay4 = 5;
 
 
 void setup(){
   Serial.begin(115200);
  
-  // =========== **** Setup Oled **** ===========
+// =========== **** Setup Oled **** ===========
   if(!display.begin(i2C_Address,true)){
     Serial.println("OLED Not Found.");
   while(1);
   }
-display.clearDisplay();
-display.setTextSize(1);
-display.setTextColor(SH110X_WHITE);
-  
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SH110X_WHITE);
+    
 // Start DHT
-   dht.begin(); 
+    dht.begin(); 
 
- // =========== **** Setup UART for Arduino UNO **** ===========
-Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
-Serial2.setTimeout(50); // 🔹 Stop ESP32 from freezing on bad reads
+// =========== **** Setup UART for Arduino UNO **** ===========
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  Serial2.setTimeout(50); // 🔹 Stop ESP32 from freezing on bad reads
 
- // =========== **** Setup BH1750 **** ===========
+// =========== **** Setup BH1750 **** ===========
   Wire.begin(21, 22);
 
   if (lightMeter.begin()) {
@@ -60,12 +66,24 @@ Serial2.setTimeout(50); // 🔹 Stop ESP32 from freezing on bad reads
   } else {
     Serial.println("Error Initializing BH1750");
   }
+// ====== *** Set The Digital Pin For Relay Output*** ======
+  pinMode(relay1, OUTPUT);
+  pinMode(relay2, OUTPUT);
+  pinMode(relay3, OUTPUT);
+  pinMode(relay4, OUTPUT);
+
+    // Turn OFF all relays initially 
+  digitalWrite(relay1, HIGH);
+  digitalWrite(relay2, HIGH);
+  digitalWrite(relay3, HIGH);
+  digitalWrite(relay4, HIGH);
 
 }
 
 
+
 void loop(){
-  // =============== *****DHT22 Read value and Print the Serial Monitor*****===============
+// =============== *****DHT22 Read value and Print the Serial Monitor*****===============
 
 float humidity=dht.readHumidity();
 float temperature=dht.readTemperature();
@@ -75,7 +93,7 @@ float temperature=dht.readTemperature();
     return;
   }
 
-  // =============== *****Moisture sensore read value and Print the Serial Monitor*****===============
+// =============== *****Moisture sensore read value and Print the Serial Monitor*****===============
   int moistureSensorValue = analogRead(moisturePin);
   int moisturePercent=map(moistureSensorValue,wetValue,dryValue,0,100);
   moisturePercent=constrain(moisturePercent,0,100);
@@ -87,11 +105,11 @@ float temperature=dht.readTemperature();
   //   Serial.printf("⚠️ WARNING: Moisture Sensor disconnected or dry air!\n");
   // }
 
- // =============== ****Send the pwm Value for Arduino UNO****===============
+// =============== ****Send the pwm Value for Arduino UNO****===============
   Serial2.println(pwmValue);
 
 
-   // ======== **** Receive MQ135 value ****=======
+// ======== **** Receive MQ135 value ****=======
   if (Serial2.available()) {
     String data = Serial2.readStringUntil('\n');
     data.trim(); // 🔹 REMOVES invisible \r characters! This is crucial for OLEDs.
@@ -102,10 +120,16 @@ float temperature=dht.readTemperature();
     }
   }
 
-  // ======== **** Receive BH1750 value ****=========
-      int lux = lightMeter.readLightLevel();
+// ======== **** Receive BH1750 value ****=========
+    int lux = lightMeter.readLightLevel();
+
+// ======== ****Turn ON all relays****=========
+    digitalWrite(relay1, LOW);
+    digitalWrite(relay2, LOW);
+    digitalWrite(relay3, LOW);
+    digitalWrite(relay4, LOW);
       
-  //  ===== ***Serial Monitor Code*** =======
+//  ===== ***Serial Monitor Code*** =======
   float feel_like = dht.computeHeatIndex(temperature, humidity, false);
   Serial.printf("Temperature : %.2f C | Humidity : %.2f % => Feels Like : %.2f C\n",temperature, humidity, feel_like);
   Serial.printf("Moisture : %d %\n",moisturePercent);
@@ -113,26 +137,26 @@ float temperature=dht.readTemperature();
   Serial.printf("Light: %d lx\n", lux);
 
 // =========== *** OLED Display Show the DHT22 Value *** ===========
-display.clearDisplay();
-display.setCursor(0,10);
-display.printf("Temperature : %.1f ",temperature);
-// Draw degree symbol near temperature value
-display.drawCircle(116, 12, 2, SH110X_WHITE);
-display.println(" C");
+  display.clearDisplay();
+  display.setCursor(0,10);
+  display.printf("Temperature : %.1f ",temperature);
+  // Draw degree symbol near temperature value
+  display.drawCircle(116, 12, 2, SH110X_WHITE);
+  display.println(" C");
 
-display.setCursor(0,20);
-display.printf("Humidity : %.2f %%\n",humidity);
+  display.setCursor(0,20);
+  display.printf("Humidity : %.2f %%\n",humidity);
 
-display.setCursor(0,30);
-display.printf("Moisture : %d %%\n",moisturePercent);
+  display.setCursor(0,30);
+  display.printf("Moisture : %d %%\n",moisturePercent);
 
-display.setCursor(0,40);
-display.printf("CO2 : %d ppm \n",CO2);
+  display.setCursor(0,40);
+  display.printf("CO2 : %d ppm \n",CO2);
 
-display.setCursor(0,50);
-display.printf("Light : %d lx \n",lux);
+  display.setCursor(0,50);
+  display.printf("Light : %d lx \n",lux);
 
-display.display();
+  display.display();
 
 delay(1000);
 }
