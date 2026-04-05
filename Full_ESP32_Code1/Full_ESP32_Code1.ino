@@ -9,8 +9,7 @@ BH1750 lightMeter;
 
 // Add the Wifi Feature
 #include <WiFi.h>
-const char* ssid = "Ai";
-const char* password = "san12345678";
+
 
 // FOR MQ135 and mosfet
 #define RXD2 16
