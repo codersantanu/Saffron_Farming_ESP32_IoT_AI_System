@@ -48,20 +48,8 @@ int relay4 = 5;
 void setup(){
   Serial.begin(115200);
 
-// ======= ***WiFi Setup (STA Mode)*** =======
-  WiFi.mode(WIFI_STA);   // Set Station Mode
-  WiFi.begin(ssid, password);
+// ======= ***WiFiManager Setup*** =======
 
-  Serial.print("Connecting to WiFi");
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("\nWiFi Connected!");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
 
 
 // =========== **** Setup Oled **** ===========
