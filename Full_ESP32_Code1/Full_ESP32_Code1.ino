@@ -9,7 +9,9 @@ BH1750 lightMeter;
 
 // Add the Wifi Feature
 #include <WiFi.h>
+#include <WiFiManager.h>
 
+WiFiManager wm;
 
 // FOR MQ135 and mosfet
 #define RXD2 16
