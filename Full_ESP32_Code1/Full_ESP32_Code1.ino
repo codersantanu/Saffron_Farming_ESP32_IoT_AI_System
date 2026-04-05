@@ -49,13 +49,19 @@ void setup(){
   Serial.begin(115200);
 
 // ======= ***WiFiManager Setup*** =======
- Serial.println("\n🚀 Starting Smart WiFi System...");
+ Serial.println("\n Starting Smart WiFi System...");
   WiFi.setAutoReconnect(true);
   WiFi.persistent(true);
   WiFi.setSleep(false);
 
   wm.setDebugOutput(true);
   wm.setConfigPortalTimeout(120);
+
+  Serial.println(" Trying Saved WiFi...");
+
+  bool res = wm.autoConnect("ESP32_Setup", "saffron2026");
+
+
 
 // =========== **** Setup Oled **** ===========
   if(!display.begin(i2C_Address,true)){
