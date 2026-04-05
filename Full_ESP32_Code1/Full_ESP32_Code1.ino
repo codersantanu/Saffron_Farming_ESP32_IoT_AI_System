@@ -49,7 +49,10 @@ void setup(){
   Serial.begin(115200);
 
 // ======= ***WiFiManager Setup*** =======
-
+ Serial.println("\n🚀 Starting Smart WiFi System...");
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
+  WiFi.setSleep(false);
 
 
 // =========== **** Setup Oled **** ===========
