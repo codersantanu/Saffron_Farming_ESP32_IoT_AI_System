@@ -112,10 +112,11 @@ void setup(){
 
 
 void loop(){
-// =============== *****DHT22 Read value and Print the Serial Monitor*****===============
 
-float humidity=dht.readHumidity();
-float temperature=dht.readTemperature();
+
+// ========= *****DHT22 Read value and Print the Serial Monitor*****=========
+  float humidity=dht.readHumidity();
+  float temperature=dht.readTemperature();
 
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("DHT22 Sensor Error!");
