@@ -7,6 +7,11 @@
 #include<BH1750.h>
 BH1750 lightMeter;
 
+// Add the Wifi Feature
+#include <WiFi.h>
+const char* ssid = "Ai";
+const char* password = "san12345678";
+
 // FOR MQ135 and mosfet
 #define RXD2 16
 #define TXD2 17
@@ -41,7 +46,23 @@ int relay4 = 5;
 
 void setup(){
   Serial.begin(115200);
- 
+
+// ======= ***WiFi Setup (STA Mode)*** =======
+  WiFi.mode(WIFI_STA);   // Set Station Mode
+  WiFi.begin(ssid, password);
+
+  Serial.print("Connecting to WiFi");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi Connected!");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+
 // =========== **** Setup Oled **** ===========
   if(!display.begin(i2C_Address,true)){
     Serial.println("OLED Not Found.");
