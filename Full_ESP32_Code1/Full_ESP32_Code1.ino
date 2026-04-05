@@ -54,6 +54,8 @@ void setup(){
   WiFi.persistent(true);
   WiFi.setSleep(false);
 
+  wm.setDebugOutput(true);
+  wm.setConfigPortalTimeout(120);
 
 // =========== **** Setup Oled **** ===========
   if(!display.begin(i2C_Address,true)){
