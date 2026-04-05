@@ -58,7 +58,7 @@ void setup(){
   WiFi.setSleep(false);
 
   wm.setDebugOutput(true);
-  wm.setConfigPortalTimeout(120);
+  wm.setConfigPortalTimeout(10);
 
   Serial.println(" Trying Saved WiFi...");
 
@@ -131,7 +131,7 @@ void loop(){
 
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("DHT22 Sensor Error!");
-    return;
+
   }
 
 // =============== *****Moisture sensore read value and Print the Serial Monitor*****===============
