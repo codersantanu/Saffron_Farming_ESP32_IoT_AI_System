@@ -44,6 +44,9 @@ int relay2 = 19;
 int relay3 = 18;
 int relay4 = 5;
 
+//Store the last reconnect time 
+unsigned long lastReconnect = 0;
+
 
 void setup(){
   Serial.begin(115200);
@@ -113,7 +116,15 @@ void setup(){
 
 void loop(){
 
+// ======**** WiFianager for Checking the connection ****=======
+  if (WiFi.status() == WL_DISCONNECTED) {
 
+    if (millis() - lastReconnect > 15000) {
+      Serial.println("⚠️ WiFi Lost! Reconnecting...");
+      WiFi.reconnect();
+     lastReconnect = millis();
+    }
+  }
 // ========= *****DHT22 Read value and Print the Serial Monitor*****=========
   float humidity=dht.readHumidity();
   float temperature=dht.readTemperature();
