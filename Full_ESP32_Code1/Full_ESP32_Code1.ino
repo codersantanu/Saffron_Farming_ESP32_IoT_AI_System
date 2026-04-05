@@ -61,7 +61,15 @@ void setup(){
 
   bool res = wm.autoConnect("ESP32_Setup", "saffron2026");
 
+  if (!res) {
+    Serial.println(" Failed or Timeout!");
 
+  } else {
+    Serial.println(" Connected!");
+    Serial.print("📡 IP: ");
+    Serial.println(WiFi.localIP());
+    Serial.println(WiFi.RSSI());
+  }
 
 // =========== **** Setup Oled **** ===========
   if(!display.begin(i2C_Address,true)){
