@@ -53,31 +53,6 @@ bool portalRunning = false;
 void setup(){
   Serial.begin(115200);
 
-// ======= ***WiFiManager Setup*** =======
- Serial.println("\n Starting Smart WiFi System...");
-  WiFi.setAutoReconnect(true);
-  WiFi.persistent(true);
-  WiFi.setSleep(false);
-
-  wm.setDebugOutput(true);
-  wm.setConfigPortalTimeout(120);
-
-  Serial.println(" Trying Saved WiFi...");
-
-  // Set the non-blocking-mode
-  wm.setConfigPortalBlocking(false);
-  bool res = wm.autoConnect("ESP32_Setup", "saffron2026");
-
-  if (!res) {
-    Serial.println(" Failed or Timeout!");
-
-  } else {
-    Serial.println(" Connected!");
-    Serial.print("📡 IP: ");
-    Serial.println(WiFi.localIP());
-    Serial.println(WiFi.RSSI());
-  }
-
 // =========== **** Setup Oled **** ===========
   if(!display.begin(i2C_Address,true)){
     Serial.println("OLED Not Found.");
@@ -86,6 +61,51 @@ void setup(){
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SH110X_WHITE);
+
+// ======= ***WiFiManager Setup*** =======
+ Serial.println("\n Starting Smart WiFi System...");
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
+  WiFi.setSleep(false);
+
+  wm.setDebugOutput(true);
+  wm.setConfigPortalTimeout(180);
+
+  Serial.println(" Trying Saved WiFi...");
+  
+  display.clearDisplay();
+  display.setCursor(0,10);
+  display.println("WiFi Starting...");
+  display.display();
+  delay(1000);
+
+bool res = wm.autoConnect("ESP32_Setup", "saffron2026");
+
+    if (res) {
+      Serial.println("Connected!");
+
+      display.clearDisplay();
+      display.setCursor(0,10);
+      display.println("WiFi Connected!\n");
+      display.print("IP : ");
+      display.println(WiFi.localIP());
+      display.print("RSSI : ");
+      display.print(WiFi.RSSI());
+      display.println(" dBm");
+      display.display();
+      delay(4000);
+
+    } else {
+      Serial.println("❌ Opening Portal...");
+
+      display.clearDisplay();
+      display.setCursor(0,10);
+      display.println("Open WiFi Setup");
+      display.println("SSID: ESP32_Setup");
+      display.display();
+
+      wm.startConfigPortal("ESP32_Setup", "saffron2026");
+    }
     
 // Start DHT
     dht.begin(); 
@@ -120,50 +140,61 @@ void setup(){
 
 void loop(){
 
-// ======**** WiFianager for Checking the connection ****=======   
-  wm.process();// Keep portal alive
-    // FIX: detect portal closed
-  if (portalRunning && WiFi.status() != WL_CONNECTED && !wm.getConfigPortalActive()) {
-    portalRunning = false;
-  }
+    wl_status_t status = WiFi.status();
+    static int failCount = 0;
+    static bool shown = false;
 
-  if (WiFi.status() == WL_DISCONNECTED) {
+    //  Connected
+    if (status == WL_CONNECTED) {
 
-      // Step 1: Try reconnect every 15 sec
-    if (millis() - lastReconnect > 15000) {
-      Serial.println("⚠️ WiFi Lost! Reconnecting...");
-      WiFi.reconnect();
-     lastReconnect = millis();
-    }
-    // Step 2: If still not connected → open portal after 30 sec
-  if (!portalRunning && millis() - lastPortalTry > 30000) {
-    Serial.println("📡 Opening Config Portal...");
-    wm.startConfigPortalModeless("ESP32_Setup", "saffron2026");
-    portalRunning = true;   // prevent repeat
-    lastPortalTry = millis();
+      if (!shown) {
+        Serial.println("WiFi Connected");
 
-  }
-  }
-    // If WiFi connected → reset portal flag
-  else {
-      portalRunning = false;
+        display.clearDisplay();
+        display.setCursor(0,10);
+        display.println("WiFi Connected!\n");
+        display.print("IP : ");
+        display.println(WiFi.localIP());
+        display.print("RSSI : ");
+        display.print(WiFi.RSSI());
+        display.println(" dBm"); 
+        display.display();
 
-        // Reset timers
-  lastReconnect = millis();
-  lastPortalTry = millis();
-
-  // Debug info
-  Serial.println("WiFi Connected");
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());
-
-  Serial.print("📶 RSSI: ");
-  Serial.println(WiFi.RSSI());
-
-  // Optional LED
-  // digitalWrite(2, HIGH);
+        delay(3000);   // better visibility
+        shown = true;
+      }
+      failCount = 0;
     }
 
+    //  Disconnected
+    else {
+      shown = false;
+
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println("WiFi Lost...");
+      display.display();
+
+      if (millis() - lastReconnect > 15000) {
+        Serial.println("🔄 Reconnecting...");
+        WiFi.reconnect();
+        lastReconnect = millis();
+        failCount++;
+      }
+
+      if (failCount > 5) {
+        display.clearDisplay();
+        display.setCursor(0,0);
+        display.println("Reconnect Failed");
+        display.println("Setup WiFi");
+        display.display();
+
+        wm.startConfigPortal("ESP32_Setup", "saffron2026");
+
+        delay(2000);
+        failCount = 0;
+      }
+    }
 
 // ========= *****DHT22 Read value and Print the Serial Monitor*****=========
   float humidity=dht.readHumidity();
