@@ -147,6 +147,21 @@ void loop(){
     // If WiFi connected → reset portal flag
   else {
       portalRunning = false;
+
+        // Reset timers
+  lastReconnect = millis();
+  lastPortalTry = millis();
+
+  // Debug info
+  Serial.println("WiFi Connected");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.print("📶 RSSI: ");
+  Serial.println(WiFi.RSSI());
+
+  // Optional LED
+  // digitalWrite(2, HIGH);
     }
 
 
