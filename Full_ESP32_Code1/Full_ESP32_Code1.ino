@@ -62,6 +62,8 @@ void setup(){
 
   Serial.println(" Trying Saved WiFi...");
 
+  // Set the non-blocking-mode
+  wm.setConfigPortalBlocking(false);
   bool res = wm.autoConnect("ESP32_Setup", "saffron2026");
 
   if (!res) {
@@ -116,7 +118,8 @@ void setup(){
 
 void loop(){
 
-// ======**** WiFianager for Checking the connection ****=======
+// ======**** WiFianager for Checking the connection ****=======   
+  wm.process();// Keep portal alive
   if (WiFi.status() == WL_DISCONNECTED) {
 
     if (millis() - lastReconnect > 15000) {
@@ -125,6 +128,7 @@ void loop(){
      lastReconnect = millis();
     }
   }
+
 // ========= *****DHT22 Read value and Print the Serial Monitor*****=========
   float humidity=dht.readHumidity();
   float temperature=dht.readTemperature();
