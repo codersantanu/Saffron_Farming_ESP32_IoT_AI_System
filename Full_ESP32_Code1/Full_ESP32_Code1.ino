@@ -46,7 +46,9 @@ int relay4 = 5;
 
 //Store the last reconnect time 
 unsigned long lastReconnect = 0;
-
+//Store the last portal time 
+unsigned long lastPortalTry = 0;
+bool portalRunning = false;
 
 void setup(){
   Serial.begin(115200);
@@ -120,14 +122,33 @@ void loop(){
 
 // ======**** WiFianager for Checking the connection ****=======   
   wm.process();// Keep portal alive
+    // FIX: detect portal closed
+  if (portalRunning && WiFi.status() != WL_CONNECTED && !wm.getConfigPortalActive()) {
+    portalRunning = false;
+  }
+
   if (WiFi.status() == WL_DISCONNECTED) {
 
+      // Step 1: Try reconnect every 15 sec
     if (millis() - lastReconnect > 15000) {
       Serial.println("⚠️ WiFi Lost! Reconnecting...");
       WiFi.reconnect();
      lastReconnect = millis();
     }
+    // Step 2: If still not connected → open portal after 30 sec
+  if (!portalRunning && millis() - lastPortalTry > 30000) {
+    Serial.println("📡 Opening Config Portal...");
+    wm.startConfigPortalModeless("ESP32_Setup", "saffron2026");
+    portalRunning = true;   // prevent repeat
+    lastPortalTry = millis();
+
   }
+  }
+    // If WiFi connected → reset portal flag
+  else {
+      portalRunning = false;
+    }
+
 
 // ========= *****DHT22 Read value and Print the Serial Monitor*****=========
   float humidity=dht.readHumidity();
