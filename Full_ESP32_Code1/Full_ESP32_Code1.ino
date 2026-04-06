@@ -253,6 +253,132 @@ void loop(){
   Serial.printf("CO2 : %d \n",CO2);
   Serial.printf("Light: %d lx\n", lux);
 
+// ======== **** Supabase Communication ****=========
+    if (status == WL_CONNECTED) {
+      WiFiClientSecure client;
+      client.setInsecure(); // Trust certificates to avoid expiration issues
+      HTTPClient http;
+
+      // 1. Send Sensor Data (every 5 seconds)
+      if (millis() - lastSensorUpdate > 5000) {
+        String url = String(supabase_url) + "/rest/v1/sensor_data";
+        http.begin(client, url);
+        http.addHeader("apikey", supabase_key);
+        http.addHeader("Authorization", String("Bearer ") + supabase_key);
+        http.addHeader("Content-Type", "application/json");
+        http.addHeader("Prefer", "return=minimal");
+
+        String payload = "{\"temperature\":" + String(temperature) + 
+                         ",\"humidity\":" + String(humidity) + 
+                         ",\"moisture\":" + String(moisturePercent) + 
+                         ",\"co2\":" + String(CO2) + 
+                         ",\"light\":" + String(lux) + "}";
+        
+        int httpResponseCode = http.POST(payload);
+        Serial.print("Supabase Sensor POST Response: ");
+        Serial.println(httpResponseCode);
+        http.end();
+        lastSensorUpdate = millis();
+      }
+
+      // 2. Get Actuator Commands (every 2 seconds)
+      if (millis() - lastActuatorCheck > 2000) {
+        String url = String(supabase_url) + "/rest/v1/actuators?id=eq.1&select=*";
+        http.begin(client, url);
+        http.addHeader("apikey", supabase_key);
+        http.addHeader("Authorization", String("Bearer ") + supabase_key);
+
+        int httpResponseCode = http.GET();
+        if (httpResponseCode == 200) {
+          String response = http.getString();
+          
+          StaticJsonDocument<512> doc;
+          DeserializationError error = deserializeJson(doc, response);
+
+          if (!error && doc.size() > 0) {
+            bool mist = doc[0]["mist_maker"];
+            bool fan = doc[0]["cooling_fan"];
+            bool r3 = doc[0]["relay3"];
+            bool r4 = doc[0]["relay4"];
+            pwmValue = doc[0]["grow_light_pwm"];
+
+            // Relays are active LOW (LOW = ON, HIGH = OFF)
+            digitalWrite(relay1, mist ? LOW : HIGH);
+            digitalWrite(relay2, fan ? LOW : HIGH);
+            digitalWrite(relay3, r3 ? LOW : HIGH);
+            digitalWrite(relay4, r4 ? LOW : HIGH);
+            
+            Serial.println("Actuators Updated from Supabase!");
+          }
+        }
+        http.end();
+        lastActuatorCheck = millis();
+      }
+    }
+// ======== **** Supabase Communication ****=========
+    if (status == WL_CONNECTED) {
+      WiFiClientSecure client;
+      client.setInsecure(); // Trust certificates to avoid expiration issues
+      HTTPClient http;
+
+      // 1. Send Sensor Data (every 5 seconds)
+      if (millis() - lastSensorUpdate > 5000) {
+        String url = String(supabase_url) + "/rest/v1/sensor_data";
+        http.begin(client, url);
+        http.addHeader("apikey", supabase_key);
+        http.addHeader("Authorization", String("Bearer ") + supabase_key);
+        http.addHeader("Content-Type", "application/json");
+        http.addHeader("Prefer", "return=minimal");
+
+        String payload = "{\"temperature\":" + String(temperature) + 
+                         ",\"humidity\":" + String(humidity) + 
+                         ",\"moisture\":" + String(moisturePercent) + 
+                         ",\"co2\":" + String(CO2) + 
+                         ",\"light\":" + String(lux) + "}";
+        
+        int httpResponseCode = http.POST(payload);
+        Serial.print("Supabase Sensor POST Response: ");
+        Serial.println(httpResponseCode);
+        http.end();
+        lastSensorUpdate = millis();
+      }
+
+      // 2. Get Actuator Commands (every 2 seconds)
+      if (millis() - lastActuatorCheck > 2000) {
+        String url = String(supabase_url) + "/rest/v1/actuators?id=eq.1&select=*";
+        http.begin(client, url);
+        http.addHeader("apikey", supabase_key);
+        http.addHeader("Authorization", String("Bearer ") + supabase_key);
+
+        int httpResponseCode = http.GET();
+        if (httpResponseCode == 200) {
+          String response = http.getString();
+          
+          StaticJsonDocument<512> doc;
+          DeserializationError error = deserializeJson(doc, response);
+
+          if (!error && doc.size() > 0) {
+            bool mist = doc[0]["mist_maker"];
+            bool fan = doc[0]["cooling_fan"];
+            bool r3 = doc[0]["relay3"];
+            bool r4 = doc[0]["relay4"];
+            pwmValue = doc[0]["grow_light_pwm"];
+
+            // Relays are active LOW (LOW = ON, HIGH = OFF)
+            digitalWrite(relay1, mist ? LOW : HIGH);
+            digitalWrite(relay2, fan ? LOW : HIGH);
+            digitalWrite(relay3, r3 ? LOW : HIGH);
+            digitalWrite(relay4, r4 ? LOW : HIGH);
+            
+            Serial.println("Actuators Updated from Supabase!");
+          }
+        }
+        http.end();
+        lastActuatorCheck = millis();
+      }
+    }
+
+
 // =========== *** OLED Display Show the DHT22 Value *** ===========
   display.clearDisplay();
   display.setCursor(0,10);
