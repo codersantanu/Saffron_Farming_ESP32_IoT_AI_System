@@ -10,8 +10,16 @@ BH1750 lightMeter;
 // Add the Wifi Feature
 #include <WiFi.h>
 #include <WiFiManager.h>
-
 WiFiManager wm;
+
+// Add Database Requirments
+#include <HTTPClient.h>
+#include <WiFiClientSecure.h>
+#include <ArduinoJson.h>
+
+// ===== *** Supabase Configuration *** =====
+const char* supabase_url = "https://jhgnrbujsggsllzkgsfb.supabase.co"; 
+const char* supabase_key = "sb_publishable_RnCtzZEfz-BYwDZ7_X73iw_Q_hdk44_";
 
 // FOR MQ135 and mosfet
 #define RXD2 16
