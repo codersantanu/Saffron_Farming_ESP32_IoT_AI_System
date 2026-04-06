@@ -20,6 +20,8 @@ WiFiManager wm;
 // ===== *** Supabase Configuration *** =====
 const char* supabase_url = "https://jhgnrbujsggsllzkgsfb.supabase.co"; 
 const char* supabase_key = "sb_publishable_RnCtzZEfz-BYwDZ7_X73iw_Q_hdk44_";
+unsigned long lastSensorUpdate = 0;
+unsigned long lastActuatorCheck = 0;
 
 // FOR MQ135 and mosfet
 #define RXD2 16
@@ -136,11 +138,11 @@ bool res = wm.autoConnect("ESP32_Setup", "saffron2026");
   pinMode(relay3, OUTPUT);
   pinMode(relay4, OUTPUT);
 
-    // Turn OFF all relays initially 
-  digitalWrite(relay1, HIGH);
-  digitalWrite(relay2, HIGH);
-  digitalWrite(relay3, HIGH);
-  digitalWrite(relay4, HIGH);
+    // Turn ON all relays initially 
+  digitalWrite(relay1, LOW);
+  digitalWrite(relay2, LOW);
+  digitalWrite(relay3, LOW);
+  digitalWrite(relay4, LOW);
 
 }
 
@@ -243,12 +245,7 @@ void loop(){
 // ======== **** Receive BH1750 value ****=========
     int lux = lightMeter.readLightLevel();
 
-// ======== ****Turn ON all relays****=========
-    digitalWrite(relay1, LOW);
-    digitalWrite(relay2, LOW);
-    digitalWrite(relay3, LOW);
-    digitalWrite(relay4, LOW);
-      
+
 //  ===== ***Serial Monitor Code*** =======
   float feel_like = dht.computeHeatIndex(temperature, humidity, false);
   Serial.printf("Temperature : %.2f C | Humidity : %.2f % => Feels Like : %.2f C\n",temperature, humidity, feel_like);
