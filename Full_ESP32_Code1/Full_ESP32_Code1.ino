@@ -58,7 +58,7 @@ void setup(){
   WiFi.setSleep(false);
 
   wm.setDebugOutput(true);
-  wm.setConfigPortalTimeout(10);
+  wm.setConfigPortalTimeout(120);
 
   Serial.println(" Trying Saved WiFi...");
 
